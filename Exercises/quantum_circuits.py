@@ -35,4 +35,3 @@ def get_qbits(list_registers):
     for register in list_registers:
         list_qbits.extend([qbit for qbit in register] if type(register) == QuantumRegister else [])
     return list_qbits
-
