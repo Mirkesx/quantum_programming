@@ -368,7 +368,8 @@ def dotp(x, y):
     
     circuit.barrier()
     
-    circuit = circuit.compose(gxorgate(n), list(range(2*n, 3*n+1))) #[anc])
+    #circuit = circuit.compose(gxorgate(n), list(range(2*n, 3*n+1)))
+    circuit = circuit.compose(gxorgate(n), qcl.get_qbits([anc,out]))
     #for i in range(n):
     #    circuit.cx(anc[i],out)
     
@@ -378,7 +379,7 @@ def dotp(x, y):
     compiled_circuit = transpile(circuit, simulator)
     job = simulator.run(compiled_circuit, shots=1)
     result = job.result()
-    #qcl.draw_circuit()
+    qcl.draw_circuit(circuit)
     counts = result.get_counts(compiled_circuit)
     return list(counts.keys())[0]
 
