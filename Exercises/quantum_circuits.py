@@ -35,3 +35,13 @@ def get_qbits(list_registers):
     for register in list_registers:
         list_qbits.extend([qbit for qbit in register] if type(register) == QuantumRegister else [])
     return list_qbits
+
+def reformat_counts(counts, n, t=0):
+    keys = [key for key in counts.keys()]
+    keys.sort()
+    new_counts = {
+        key[::-1]: round(counts[key]/n * 100, 2) for key in keys if counts[key]/n > t
+    }
+    return new_counts
+    
+    

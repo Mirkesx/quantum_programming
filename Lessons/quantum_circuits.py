@@ -14,7 +14,7 @@ import time
 
 
 # raise up the quality of the inline plots
-dpi = 200
+dpi = 150
 mpl.rcParams['figure.dpi']= dpi
 mpl.rc("savefig", dpi=dpi)
 
@@ -36,3 +36,12 @@ def get_qbits(list_registers):
         list_qbits.extend([qbit for qbit in register] if type(register) == QuantumRegister else [])
     return list_qbits
 
+def reformat_counts(counts):
+    keys = counts.keys()
+    n = len(sum(int(keys)))
+    new_counts = {
+        counts[key]: key/n for key in keys
+    }
+    return new_counts
+    
+    
