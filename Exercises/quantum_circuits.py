@@ -40,7 +40,7 @@ def reformat_counts(counts, n, t=0):
     keys = [key for key in counts.keys()]
     keys.sort()
     new_counts = {
-        key[::-1]: round(counts[key]/n * 100, 2) for key in keys if counts[key]/n > t
+        key: round(counts[key]/n * 100, 2) for key in keys if counts[key]/n > t
     }
     return new_counts
     

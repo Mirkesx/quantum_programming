@@ -182,7 +182,46 @@ IntDiv("1101","101") = "0011" (floor(13/4) = 3)
 '''
 
 
-
+def intdiv(x, y):
+    x = x[::-1]
+    y = y[::-1]
+    n = len(x)
+    m = len(y)
+    xr = QuantumRegister(n, "x")
+    yr = QuantumRegister(m, "y")
+    out = QuantumRegister(n, "output")
+    anc = QuantumRegister(m, "anc")
+    cr = ClassicalRegister(n, "cr")
+    qc = QuantumCircuit(xr, yr, anc, out, cr)
+    qc.barrier()
+    for i in range(n):
+        if x[i] == '1':
+            qc.x(xr[i])
+    for j in range(m):
+        if y[j] == '1':
+            qc.x(yr[j])
+    qc.barrier()
+    for i in range(n):
+        qc.cx(xr[i],out[i])
+    for j in range(m):
+        qc.barrier()
+        for i in range(n-1):
+            qc.cswap(yr[j], out[i], out[i+1])
+    
+        qc.cx(out[n-1], anc[j])
+        qc.ccx(anc[j], yr[j], out[n-1])
+    
+    qc.barrier()
+    qc.measure(out, cr)
+    simulator = QasmSimulator()
+    compiled_circuit = transpile(qc, simulator)
+    shots = 1
+    job = simulator.run(compiled_circuit, shots=shots)
+    result = job.result()
+    qcl.draw_circuit(qc)
+    counts = result.get_counts(compiled_circuit)
+    new_counts = qcl.reformat_counts(counts, shots)
+    return new_counts
 
 
 
