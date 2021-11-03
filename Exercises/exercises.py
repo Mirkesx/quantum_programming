@@ -225,11 +225,66 @@ def intdiv(x, y):
 
 
 
+'''
+ESERCIZIO 4: COMPARE
+Si supponga di ricevere in input due numeri interi, x e y, entrambi codificati da sequenze binarie di lunghezza n. 
+Ne consegue che x e y sono valori compresi tra 0 e 2^n-1. Si realizzi un circuito che implementi la funzione 
+Booleana f:{0,1}^n x {0,1}^n --> {0,1} definita come f(x,y)=1 se e solo se x<y.
+Nel caso in cui facciate uso di ancilla bits, la garbage dovrà essere eliminata prima della fine 
+della computazione.
+'''
+
+def cxorgate():
+    circuit = QuantumCircuit(4)
+    circuit.ccx(0,2,3)
+    circuit.ccx(1,2,3)
+    g = circuit.to_gate()
+    g.name = "cxor"
+    return g
 
 
-
-
-
+def compare(x, y):
+    n = len(x)
+    if len(y) is not n:
+        return "You must provide two bit-strings with the same length"
+    xr = QuantumRegister(n, "x")
+    yr = QuantumRegister(n, "y")
+    out = QuantumRegister(1, "output")
+    anc = QuantumRegister(n+1, "ancilla")
+    fo = QuantumRegister(1, "final-output")
+    cr = ClassicalRegister(1, "cr")
+    qc = QuantumCircuit(xr, yr, anc, out, fo, cr)
+    for i in range(n):
+        if x[i] == '1':
+            qc.x(xr[i])
+        if y[i] == '1':
+            qc.x(yr[i])
+    qc.barrier()
+    qc.x(anc[n])
+    for i in range(n):
+        qc = qc.compose(cxorgate(),[xr[i], yr[i], anc[n], anc[i]])
+        qc.ccx(yr[i],anc[i],out)
+        qc.cx(anc[i],anc[n])
+    qc.barrier()
+    qc.cx(out,fo)
+    #qc.measure(out, cr)
+    qc.barrier()
+    for i in range(n-1,-1,-1):
+        qc.cx(anc[i],anc[n])
+        qc.ccx(yr[i],anc[i],out)
+        qc = qc.compose(cxorgate(),[xr[i], yr[i], anc[n], anc[i]])
+    qc.x(anc[n])
+    
+    qc.measure_all()
+    simulator = QasmSimulator()
+    compiled_circuit = transpile(qc, simulator)
+    shots = 1
+    job = simulator.run(compiled_circuit, shots=shots)
+    result = job.result()
+    #qcl.draw_circuit(qc)
+    counts = result.get_counts(compiled_circuit)
+    new_counts = qcl.reformat_counts(counts, shots)
+    return new_counts
 
 
 

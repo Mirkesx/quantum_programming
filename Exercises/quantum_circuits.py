@@ -16,6 +16,8 @@ import time
 # raise up the quality of the inline plots
 dpi = 200
 mpl.rcParams['figure.dpi']= dpi
+#mpl.rcParams["figure.figsize"] = (32,9)
+#plt.rcParams["figure.figsize"] = (32,9)
 mpl.rc("savefig", dpi=dpi)
 
 def draw_circuit(qc):
