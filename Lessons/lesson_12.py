@@ -28,16 +28,6 @@ def projective_measurement(q, M):
     return np.matmul(q, np.matmul(M, q))
 
 
-def measure(qubit):
-    if sum(qubit) == 1:
-        if qubit[-1] == 1:
-            return 1
-        else:
-            return 0
-    else:
-        return random.randint(0,1)
-
-
 def E91(N, interception=False):
     qubits = [ getPair(not interception) for i in range(N) ]
     
@@ -70,7 +60,7 @@ def E91(N, interception=False):
         alice_key = ""
         bob_key = ""
         for i in key_list:
-            s = measure(qubits[i])
+            s = qc.measure(qubits[i])
             alice_key += "{}".format(s)
             bob_key += "{}".format(1 - s)
         print("Alice's secret key is: {}".format(alice_key))

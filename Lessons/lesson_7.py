@@ -117,7 +117,14 @@ def halfAdder(b0,b1):
     
     counts(a4)
 
-
+def measure(qubit):
+    if sum(qubit) == 1:
+        if qubit[-1] == 1:
+            return 1
+        else:
+            return 0
+    else:
+        return random.randint(0,1)
 
 X = np.array([[0,1],[1,0]])
 Z = np.array([[1,0],[0,-1]])
