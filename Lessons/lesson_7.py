@@ -47,7 +47,7 @@ def counts(v):
     n = int(np.log2(N))
     formatstr = "{:0>"+str(n)+"b}"
     for i in range(N):
-        if v[i] > 0:
+        if v[i]**2 > 0:
             print('- {}, P: {:.2f}%'.format(formatstr.format(i), (v[i]**2)*100))
 
 # CX with many controls
