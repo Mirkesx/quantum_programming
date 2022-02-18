@@ -8,7 +8,8 @@ Created on Tue Oct 26 11:50:52 2021
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib as mpl
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile
+from qiskit import QuantumRegister, ClassicalRegister, transpile
+from qiskit.providers.aer import QasmSimulator
 import os
 import time
 
@@ -46,4 +47,15 @@ def reformat_counts(counts, n, t=0):
     }
     return new_counts
     
-    
+
+def simulate(qc, shots=1000):
+    simulator = QasmSimulator()
+    compiled_circuit = transpile(qc, simulator)
+    job = simulator.run(compiled_circuit, shots=shots)
+    result = job.result()
+    #qcl.draw_circuit(qc)
+    counts = result.get_counts(compiled_circuit)
+    #new_counts = qcl.reformat_counts(counts, shots)
+    #return new_counts
+    return counts
+    return int(list(counts.keys())[0])

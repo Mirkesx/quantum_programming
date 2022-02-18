@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jan 25 19:40:47 2022
+
+@author: mc
+"""
+
+import quantum_circuits as qcl
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile
+from qiskit.extensions import Initialize
+from qiskit.providers.aer import QasmSimulator
+import numpy as np
+import random
+
+def simulate(qc):
+    simulator = QasmSimulator()
+    compiled_circuit = transpile(qc, simulator)
+    shots = 1
+    job = simulator.run(compiled_circuit, shots=shots)
+    result = job.result()
+    #qcl.draw_circuit(qc)
+    counts = result.get_counts(compiled_circuit)
+    #new_counts = qcl.reformat_counts(counts, shots)
+    #return new_counts
+    return int(list(counts.keys())[0])
+
+
+
+def randbit():
+    qc = QuantumCircuit(1,1)
+    qc.h(0)
+    qc.measure(0,0)
+    return simulate(qc)
+
+def random_sequence(n):
+    return [ randbit() for i in range(n) ]
+
+def random_bases(n):
+    b = []
+    s = random_sequence(n)
+    for el in s:
+        if el == 1:
+            b.append("Z")
+        else:
+            b.append("X")
+    return b
+
+def encode_message(bits, bases):
+    n = len(bits)
+    message = []
+    for i in range(n):
+        qc = QuantumCircuit(1,1)
+        if bits[i] == 1:
+            qc.x(0)
+        if bases[i] == "X":
+            qc.h(0)
+        qc.barrier()
+        message.append(qc)
+    return message
+
+def measure_message(message, bases):
+    n = len(message)
+    new_message = []
+    for i in range(n):
+        qc = message[i]
+        if bases[i] == "X":
+            qc.h(0)
+        qc.barrier()
+        qc.measure(0,0)
+        new_message.append(qc)
+    return new_message
+
+def decode_message(message, bases):
+    n = len(message)
+    bits = []
+    message = measure_message(message, bases)
+    for i in range(n):
+        qc = message[i]
+        bits.append(simulate(qc))
+    return bits
+
+def getSampleIdx(n):
+    idx = list(range(n))
+    random.shuffle(idx)
+    return idx[:int(n/2)]
+
+
+def BB84(n, intercept = False):
+    alice_bits = random_sequence(n)
+    print("Alice bits: {}".format(alice_bits))
+    alice_bases = random_bases(n)
+    print("Alice bases: {}".format(alice_bases))
+    
+    message = encode_message(alice_bits, alice_bases)
+    
+    if intercept:
+        eve_bases = ['Z']*n
+        print("Eve bases: {}".format(eve_bases))
+        message = measure_message(message, eve_bases)
+        
+    
+    bob_bases = random_bases(n)
+    print("Bob bases: {}".format(bob_bases))
+    bob_bits = decode_message(message, bob_bases)
+    print("Bob bits: {}".format(bob_bits))
+    
+    match = [ i for i in range(n) if alice_bases[i] == bob_bases[i] ]
+    
+    alice_key = [ alice_bits[i] for i in match ]
+    print("Alice matches: {}".format(alice_key))
+    bob_key = [ bob_bits[i] for i in match ]
+    print("Bob matches: {}".format(bob_key))
+    
+    sampleIdx = getSampleIdx(len(alice_key))
+    
+    alice_sample = [ alice_key[i] for i in sampleIdx ]
+    print("Alice sample: {}".format(alice_sample))
+    bob_sample = [ bob_key[i] for i in sampleIdx ]
+    print("Bob sample: {}".format(bob_sample))
+    
+    if alice_sample == bob_sample:
+        print("No Interception")
+    else:
+        print("Interception")
